@@ -23,7 +23,7 @@ const uuid = require('uuid');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const passport = require('passport');
+const passport = require('passport');//can I set a users property on this?
 const LocalStrategy = require('passport-local').Strategy;
 const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
 const Database = require('../app/utils/database');
@@ -31,18 +31,17 @@ const authConfig = require('./auth-config');
 const methodOverride = require('method-override');
 
 // authentication =================================================================
-// // Configure the local strategy for use by Passport.
-// passport.use(new LocalStrategy(
-//   (username, password, done) => {
-//     let user = Database.users.findOne({ 'username' : username });
-//     if (!user || user.password !== password) { return done(null, false); } //, { message: 'Invalid user name or password.' }); //todo: add error handling and return message
-//     return done(null, user);
-//   }));
+// Configure the local strategy for use by Passport.
+passport.use(new LocalStrategy(
+  (username, password, done) => {
+    let user = Database.users.findOne({ 'username' : username });
+    if (!user || user.password !== password) { return done(null, false); } //todo: add error handling and return message
+    return done(null, user);
+  }));
 
 let callback = (iss, sub, profile, accessToken, refreshToken, done) => {
 	done (null, {
-  // (req, res) => {
-  //   let user = Database.users.findOne(req.user.id);
+    //todo: update user with tokenInfo and MS account name
 		profile,
 		accessToken,
 		refreshToken

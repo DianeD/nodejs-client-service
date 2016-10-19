@@ -3,27 +3,27 @@
 // const authConfig = require('../../config/auth-config');
 // const querystring = require('querystring');
 // const request = require('superagent');
-const Database = require('../utils/database');
+const Database = require('../utils/database'); //how can I update using passport from here?
 
 let Auth = function () {};
   
 Auth.prototype = {
-  // ensureAuthenticated: function (req) {
-  //   if (req.isAuthenticated()) { return true; }
-  //   return false;
-  // },
-  getAccessToken: function(req) {
-    let user = req.user.accessToken;
-
-    // Check access token expiry. 
-    // If the token is expired or about to expire (within five minutes), get a new one.     
-    let tokenValidUntil = new Date();
-    tokenValidUntil.setTime((user.tokenExpires - 300) * 1000); 
-    // if (user.tokenExpires <= tokenValidUntil) {
-    //   accessToken = this.refreshAccessToken(user, user.refreshToken);
-    // }
-    return accessToken; //need to await
+  ensureAuthenticated: function (req) {
+    if (req.isAuthenticated()) { return true; } //todo: add expiry check
+    return false;
   },
+  // getAccessToken: function(req) {
+  //   let user = req.user.accessToken;
+
+  //   // Check access token expiry. 
+  //   // If the token is expired or about to expire (within five minutes), get a new one.     
+  //   let tokenValidUntil = new Date();
+  //   tokenValidUntil.setTime((user.tokenExpires - 300) * 1000); 
+  //   // if (user.tokenExpires <= tokenValidUntil) {
+  //   //   accessToken = this.refreshAccessToken(user, user.refreshToken);
+  //   // }
+  //   return accessToken; //need to await
+  // },
   // login: function(req, res, loginHint) {
   //   var authorizeUrl = authConfig.params.authority + authConfig.params.authorizeEndpoint
   //     + '?client_id=' + authConfig.params.appId

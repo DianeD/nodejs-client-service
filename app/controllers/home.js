@@ -59,6 +59,6 @@ router.get('/token',
     user.refreshToken = user.refresh_token;
     user.tokenExpires = Math.floor((Date.now() / 1000) + user.expires_in); //
     user.microsoftAccountName = '';//user.profile.
-    passport.users.update(user);//Database.users.update(user);
+    passport.users.update(user);//Database.users.update(user); //don't expect this to work
 		res.redirect('/graph');
 });
