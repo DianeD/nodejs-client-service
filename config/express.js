@@ -31,26 +31,29 @@ const authConfig = require('./auth-config');
 const methodOverride = require('method-override');
 
 // authentication =================================================================
-// // Configure the local strategy for use by Passport.
-// passport.use(new LocalStrategy(
-//   (username, password, done) => {
-//     let user = Database.users.findOne({ 'username' : username });
-//     if (!user || user.password !== password) { return done(null, false); } //, { message: 'Invalid user name or password.' }); //todo: add error handling and return message
-//     return done(null, user);
-//   }));
+// Configure the local strategy for use by Passport.
+passport.use(new LocalStrategy(
+  (username, password, done) => {    
+    let user = users.findOne({ 'username' : username });
+    //let user = Database.users.findOne({ 'username' : username });
+    if (!user || user.password !== password) { return done(null, false); } //, { message: 'Invalid user name or password.' }); //todo: add error handling and return message
+    return done(null, user);
+  }));
 
-let callback = (iss, sub, profile, accessToken, refreshToken, done) => {
-	done (null, {
-  // (req, res) => {
-  //   let user = Database.users.findOne(req.user.id);
-		profile,
-		accessToken,
-		refreshToken
-	})
-};
+const users = Database.users;
 
-// Configure the Azure AD strategy for use by Passport.
-passport.use(new OIDCStrategy(authConfig.creds, callback));
+// let callback = (iss, sub, profile, accessToken, refreshToken, done) => {
+// 	done (null, {
+//   // (req, res) => {
+//   //   let user = Database.users.findOne(req.user.id);
+// 		profile,
+// 		accessToken,
+// 		refreshToken
+// 	})
+// };
+
+// // Configure the Azure AD strategy for use by Passport.
+// passport.use(new OIDCStrategy(authConfig.creds, callback));
 
 passport.serializeUser(function(user, done) {
   done(null, user.id);
@@ -75,13 +78,13 @@ module.exports = function(app, config) {
   app.use(bodyParser.urlencoded({
     extended: true
   }));
-  app.use(cookieParser());
+  app.use(cookieParser());//don't need?
   app.use(session({
     secret: '12349',
     name: 'graphNodeServiceCookie',
     resave: false,
     saveUninitialized: false,
-    cookie: {secure: true} //must comment out to work with local
+    //cookie: {secure: true} //must comment out to work with local
   }));
   app.use(passport.initialize());
   app.use(passport.session());

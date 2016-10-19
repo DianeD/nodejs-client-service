@@ -8,9 +8,18 @@ block content
   .ms-Grid
     .ms-Grid-row
       .ms-NavBar
-        //- if current
+        if current
           h1.ms-font-xl.ms-fontColor-themePrimary Welcome #{current.displayName}!
-        if !current        
+          h2.ms-font-l Your actions
+          div.ms-font-m           
+            ul
+              li
+                  a.ms-Link(href='https://github.com/microsoftgraph') See upcoming appointments
+              li
+                  a.ms-Link(href='https://github.com/microsoftgraph') Schedule an appointment          
+              li
+                  a.ms-Link(href='/graph') Open your journal
+        //- if !current        
           h1.ms-font-xl.ms-fontColor-themePrimary Welcome!
           h2.ms-font-l Your actions
           div.ms-font-m           
