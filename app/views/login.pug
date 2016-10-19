@@ -1,0 +1,29 @@
+//- Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license.
+//- See LICENSE in the project root for license information.
+
+extends layout
+
+block content
+
+  .ms-Grid
+    .ms-Grid-row
+      .ms-NavBar
+        h1.ms-font-su.ms-fontColor-themePrimary Log in
+        .ms-Grid
+          form(method='POST', action='/login')
+            .ms-Grid-row
+              label.ms-Label User name
+              input.ms-TextField-field(type='text', name='username', value='adarrow')
+            .ms-Grid-row
+              label.ms-Label Password
+              input.ms-TextField-field(type='password', name='password', value='a')
+            .ms-Grid-row
+              br
+              button.ms-Button.ms-Button--primary(type='submit')
+                span.ms-Button-label Log in
+        if message 
+          .ms-MessageBar 
+          .ms-MessageBar-content
+            .ms-MessageBar-icon
+            i.ms-Icon ms-Icon--Info
+            .ms-MessageBar-text #{message}
