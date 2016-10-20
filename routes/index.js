@@ -9,14 +9,10 @@ const express = require('express'),
   router = express.Router(),
   passport = require('passport');
 
-// module.exports = function (app) {
-//   app.use('/', router);
-// };
-
-router.use((req, res, next) => {
-  console.log(req.method + ' ' + req.url); //todo: add something useful or remove
-  next();
-});
+// router.use((req, res, next) => {
+//   console.log(req.method + ' ' + req.url); //todo: add something useful or remove
+//   next();
+// });
 
 router.get('/', 
   (req, res) => {
@@ -25,16 +21,28 @@ router.get('/',
     });
   });
 
+// Route for local account login.
 router.get('/login',
   (req, res) => {
     res.render('login');
   });
-
 router.post('/login', 
   passport.authenticate('local', { failureRedirect: '/login' }), //todo: add login error message
   (req, res) => {
     res.redirect('/');
   });
+
+// Routes for Azure AD authentication.
+router.get('/connect',
+	passport.authenticate('azuread-openidconnect', { failureRedirect: '/yabba' }),
+	(req, res) => {
+		res.redirect('/');
+});
+router.get('/token', 
+	passport.authenticate('azuread-openidconnect', { failureRedirect: '/dabba' }), //how add error message
+	(req, res) => { 
+		res.redirect('/graph');
+});
 
 router.get('/schedule', //loads a dummy page
   (req, res) => {
@@ -42,19 +50,5 @@ router.get('/schedule', //loads a dummy page
       current: req.user || null
     });
   });
-
-
-// Routes for Azure AD authentication
-router.get('/connect',
-	passport.authenticate('azuread-openidconnect', { failureRedirect: '/yabba' }),
-	(req, res) => {
-		res.redirect('/');
-});
-
-router.get('/token', 
-	passport.authenticate('azuread-openidconnect', { failureRedirect: '/dabba' }), //how add error message
-	(req, res) => { 
-		res.redirect('/graph');
-});
 
 module.exports = router;

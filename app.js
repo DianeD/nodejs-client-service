@@ -49,9 +49,6 @@ let callback = (req, iss, sub, profile, accessToken, refreshToken, expires_in, d
   Database.users.update(user);
 	done(null, {
     user
-		// profile,
-		// accessToken,
-		// refreshToken
 	})
 };
 

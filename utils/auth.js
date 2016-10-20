@@ -5,28 +5,19 @@
 
 'use strict';
 
-// const authConfig = require('../../config/auth-config');
-// const querystring = require('querystring');
-// const request = require('superagent');
-const Database = require('../utils/database'); //how can I update using passport from here? //why do I need to set this?
-
 let Auth = function () {};
   
 Auth.prototype = {
   ensureAuthenticated: function (req) {
-    if (req.isAuthenticated()) { return true; } //todo: add expiry check
+
+    // Check token expiry. If the token is valid for another 5 minutes, we'll use it.
+    let user = req.user;       
+    let expiration = new Date();
+    expiration.setTime((user.tokenExpires - 300) * 1000); 
+    if (req.isAuthenticated() && expiration > new Date()) { return true; }
     return false;
   },
-  updateTokenInfo(user, tokenInfo, microsoftAccountName) {
-    user.accessToken = tokenInfo.access_token;
-    user.refreshToken = tokenInfo.refresh_token;
-    user.tokenExpires = Math.floor((Date.now() / 1000) + tokenInfo.expires_in);
-    if (microsoftAccountName) {
-      user.microsoftAccountName = microsoftAccountName;
-    };
-    Database.users.update(user);
-  },
-  logout: function () {
+  logout: function () { // do we need this for this scenario?
 
   }
 }
