@@ -15,7 +15,6 @@ module.exports = {
         responseType: 'code',
         responseMode: 'query',
         validateIssuer: false,
-        //sessionKey: 'nodesample',
         scope: ['notes.readwrite', 'user.read', 'profile', 'offline_access']
     }
 };

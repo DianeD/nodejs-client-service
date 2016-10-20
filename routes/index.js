@@ -9,9 +9,9 @@ const express = require('express'),
   router = express.Router(),
   passport = require('passport');
 
-module.exports = function (app) {
-  app.use('/', router);
-};
+// module.exports = function (app) {
+//   app.use('/', router);
+// };
 
 router.use((req, res, next) => {
   console.log(req.method + ' ' + req.url); //todo: add something useful or remove
@@ -36,7 +36,7 @@ router.post('/login',
     res.redirect('/');
   });
 
-router.get('/schedule', //dummy page
+router.get('/schedule', //loads a dummy page
   (req, res) => {
     res.render('schedule', {
       current: req.user || null
@@ -44,7 +44,7 @@ router.get('/schedule', //dummy page
   });
 
 
-//////////////////test
+// Routes for Azure AD authentication
 router.get('/connect',
 	passport.authenticate('azuread-openidconnect', { failureRedirect: '/yabba' }),
 	(req, res) => {
@@ -54,11 +54,7 @@ router.get('/connect',
 router.get('/token', 
 	passport.authenticate('azuread-openidconnect', { failureRedirect: '/dabba' }), //how add error message
 	(req, res) => { 
-    let user = req.user;
-    user.accessToken = user.access_token;
-    user.refreshToken = user.refresh_token;
-    user.tokenExpires = Math.floor((Date.now() / 1000) + user.expires_in); //
-    user.microsoftAccountName = '';//user.profile.
-    passport.users.update(user);//Database.users.update(user); //don't expect this to work
 		res.redirect('/graph');
 });
+
+module.exports = router;
