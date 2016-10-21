@@ -8,6 +8,7 @@
 const express = require('express'),
   router = express.Router(),
   graph = require('msgraph-sdk-javascript'),
+  qs = require('querystring'),
   Auth = require('../utils/auth');
 //const request = require('superagent');
 
@@ -25,14 +26,20 @@ router.get('/', (req, res) => {
     });
 
     // Get the journal section.
-    client.api('/me/notes/sections').orderby('lastModifiedTime%20desc').get((err, response) => { //filter by section name
-      if (err) {
-        res.render('error', { message: err.message, error: err });
-        return;
+    //https://graph.microsoft.com/beta/me/notes/sections?filter=name%20eq%20'Alex%20Darrow''s%20journal'
+    client.api('/me/notes/sections')
+      .filter('name eq \'' + user.displayName + '\'\'s journal\'')
+      .select('name,id')
+      .get((err, response) => {
+      //todo: top 3 pages orderby lmt (if not already default), //or get pages with this sectionId
+        if (err) {
+          res.render('error', { message: err.message, error: err });
+          return;
       }
       let sections = response.value;
 
       // If the journal section exists, get the last three pages. 
+      // Expanding on pages is not supported.
       if (sections.length > 0) {
         const section = sections[0];
         const sectionId = section.id;
@@ -52,13 +59,13 @@ router.get('/', (req, res) => {
       // Then redirect back to this route.
       // This should only be required only on first visit to this page.
       else {
-        let sectionName = encodeUrlComponent(user.displayName + ' \'s journal');
-        client.api('/me/notes/pages?sectionName=').post((err, response) => {
+        //let sectionName = qs.escape(user.displayName + ' \'s journal');
+        client.api('/me/notes/pages?sectionName=' + user.displayName + '\' journal').post((err, response) => { //errs here
           if (err) {
             res.render('error', { message: err.message, error: err });
             return;
           }
-          res.redirect('/graph');
+          else res.redirect('/graph');
         });
       }
     });
