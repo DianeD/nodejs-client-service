@@ -9,16 +9,23 @@ block content
     .ms-CommandBar-items
       a.ms-Link(href='/') Home
     .ms-CommandBar-items.ms-CommandBar-sideCommands
-      .ms-font-s #{current.microsoftAccountName}
+      .ms-font-s #{user.microsoftAccountName}
   .ms-Grid        
     .ms-Grid-row
       .ms-NavBar
         .ms-NavBar-items
-          .ms-font-xl.ms-fontColor-themePrimary #{current.displayName}'s journal
+          .ms-font-xl.ms-fontColor-themePrimary #{section.name}
           .ms-font-l Your recent notes
-          .ms-font-m            
-              .ms-Grid
-                  .ms-Grid-row
-                      a.ms-Link(href='/graph/getMyPages') Get my pages
-                  if response
-                    .ms-font-m #{response}
+          .ms-font-m     
+            .ms-Grid
+              each page in pages
+                .ms-Grid-row
+                  p #{page.id}
+                  p !{test}
+            .ms-Grid
+              .ms-Grid-row
+                a.ms-Link(href='/graph/getMyPages') Create note
+              .ms-Grid-row
+                a.ms-Link(href='/graph/getMyPages') Edit note
+              .ms-Grid-row
+                a.ms-Link(href='/graph/getMyPages') Delete note
