@@ -22,17 +22,22 @@ const logger = require('morgan');
 //var cookieParser = require('cookie-parser');
 const https = require('https');
 const bodyParser = require('body-parser');
-const passport = require('passport');//can I set a users property on this?
+const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
 const Database = require('./utils/database');
 const config = require('./utils/config');
+const uuid = require('uuid');
 
 // Configure the local strategy for use by Passport.
 passport.use(new LocalStrategy(
   (username, password, done) => {
-    let user = Database.users.findOne({ 'username' : username });
-    if (!user || user.password !== password) { return done(null, false); } 
+    const user = Database.users.findOne({ 'username' : username });
+    if (!user || user.password !== password) { return done(null, false); }
+
+    // User found. Save userToken and return the user.
+    user.userToken = uuid.v4();
+    Database.users.update(user);
     return done(null, user);
   }));
 
