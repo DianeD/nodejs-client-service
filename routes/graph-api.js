@@ -11,11 +11,11 @@ const express = require('express'),
   qs = require('querystring'),
   AuthHelper = require('../utils/auth');
 
-//router.use(req, res, next);
-// check userToken
-// if (req.headers.U-Token == req.user.userToken) next();
-// res.statusCode = 401
-// res.send();
+router.use((req, res, next) => {
+  if (req.headers.u-token === req.user.userToken) 
+    return next();
+  res.status(401).send('Invalid user token.');
+});
 
 // Returns the title, createdTime, and body content of the three latest notes.
 // 1. Gets the OneNote section named "<user.displayName>'s journal"
@@ -88,48 +88,5 @@ router.get('/getJournal', (req, res) => {
   }
   else res.redirect('/connect'); //still unable to get passport.authenticate() to trigger redirect when called from here
 });
-
-// function getSections(req) {
-//   let req1 = req;
-//   if (Auth.prototype.ensureAuthenticated(req)) {
-//     request
-//       .get('https://graph.microsoft.com/beta/me/notes/sections')
-//       .set('Authorization', 'Bearer ' + req.user.accessToken)
-//       .end((err, res) => {
-//         if (err || !res.ok) 
-//           return err;
-//         let sections = res.body.value;
-//         if (sections.length === 0)
-//           createPageInSection(req1, 'My page', 'My%20journal');//todo: promisify
-//         return sections;
-//       })
-//   }
-// }
-
-// // Create a page and optionally create a parent section.
-// function createPageInSection(req, pageTitle, sectionName) {
-//   let pageHtml = '<!DOCTYPE html>' +
-//     '<html>' +
-//       '<head>' +
-//         '<title>' + pageTitle + '</title>' +
-//         '<meta name=\'created\' content=\'' + new Date() + '\'/>' +
-//       '</head>' +
-//     '</html>';
-//   if (Auth.prototype.ensureAuthenticated(req)) {
-//     let page = null;
-//     request
-//       .post('https://graph.microsoft.com/beta/me/notes/pages?sectionName=' + sectionName)
-//       .set('Authorization', 'Bearer ' + req.user.accessToken)
-//       .type('text/html')
-//       .send(pageHtml)
-//       .end((err, res) => {
-//         if (err || !res.ok) 
-//           res1.render('error', { error: err });
-//         else
-//           page = res.body;
-//           return page;
-//     })
-//   }
-// }
 
 module.exports = router;
