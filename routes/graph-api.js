@@ -9,12 +9,21 @@ const express = require('express'),
   router = express.Router(),
   graph = require('msgraph-sdk-javascript'),
   qs = require('querystring'),
-  Auth = require('../utils/auth');
-//const request = require('superagent');
+  AuthHelper = require('../utils/auth');
 
-router.get('/', (req, res) => {
+//router.use(req, res, next);
+// check userToken
+// if (req.headers.U-Token == req.user.userToken) next();
+// res.statusCode = 401
+// res.send();
 
-  // Check whether the user is authenticated and their Microsoft login is mapped to the local user.
+// Returns the title, createdTime, and body content of the three latest notes.
+// 1. Gets the OneNote section named "<user.displayName>'s journal"
+// 2. Gets the three most recently created pages
+// 3. Gets the page content of the three pages
+router.get('/getJournal', (req, res) => {
+
+  // Check whether the user is authenticated and has a mapped Microsoft login.
   let user = req.user;
   if (req.isAuthenticated() && user.microsoftAccountName) {
     let client = graph.init({
@@ -31,28 +40,35 @@ router.get('/', (req, res) => {
       .filter('name eq \'' + user.displayName + '\'\'s journal\'')
       .select('name,id')
       .get((err, response) => {
-      //todo: top 3 pages orderby lmt (if not already default), //or get pages with this sectionId
         if (err) {
           res.render('error', { message: err.message, error: err });
           return;
-      }
-      let sections = response.value;
+        }
+        let sections = response.value;
 
-      // If the journal section exists, get the last three pages. 
-      // Expanding on pages is not supported.
-      if (sections.length > 0) {
-        const section = sections[0];
-        const sectionId = section.id;
-        client.api('/me/notes/sections/' + sectionId + '/pages').get((err, response) => {
-          if (err) {
-            res.render('error', { message: err.message, error: err });
-            return;
-          }
-          const pages = response.value;
-          const html = '<div><p><b>hello </b></p></div><div><p><i>test page html</i></p></div>';
-          // get and prep page content
-          res.render('journal', { user: user, section: section.name, pages: pages, test: html });
-        });
+        // If the journal section exists, get the last three pages. 
+        // Expanding on pages is not supported for Office 365 notebooks, so this call is separate.
+        if (sections.length > 0) {
+          const section = sections[0];
+          const sectionId = section.id;
+          const pages = [];
+          //client.api('me/notes/pages?filter=/parentSection/id eq \'' + sectionId + '\'')
+            //.select('title,createdTime,content')
+            //.top(3)
+          client.api('/me/notes/sections/' + sectionId + '/pages')
+            .select('title,createdTime,pageContentUrl')
+            .orderby('lastModifiedTime desc')
+            .top(3)
+            .get((err, response) => {
+              if (err) {
+                res.render('error', { message: err.message, error: err });
+                return;
+              }
+              //loop pages = response.value;
+              const html = '<div><p><b>hello </b></p></div><div><p><i>test page html</i></p></div>';
+              // get and prep page content
+              res.render('journal', { user: user, section: section.name, pages: pages, test: html });
+          });
       }  
       
       // Otherwise create the journal section and the initial page.

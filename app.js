@@ -32,13 +32,13 @@ const config = require('./utils/config');
 passport.use(new LocalStrategy(
   (username, password, done) => {
     let user = Database.users.findOne({ 'username' : username });
-    //if (err) { return done(err); }//todo: test error handling and return message
     if (!user || user.password !== password) { return done(null, false); } 
     return done(null, user);
   }));
 
-let callback = (req, iss, sub, profile, accessToken, refreshToken, expires_in, done) => {  
-//let callback = (iss, sub, profile, accessToken, refreshToken, done) => {  
+//let callback = (req, iss, sub, profile, accessToken, refreshToken, expires_in, done) => {  
+//let callback = (iss, sub, profile, accessToken, refreshToken, done) => {
+let callback = (token, done) => {
   let user = req.user;
   if (!!profile && !!accessToken && !!refreshToken && !!expires_in) {
     user.microsoftAccountName = profile._json.preferred_username;
@@ -51,6 +51,14 @@ let callback = (req, iss, sub, profile, accessToken, refreshToken, expires_in, d
     user
 	})
 };
+
+//  *   function(token, done) {
+//  *     User.findById(token.sub, function (err, user) {
+//  *       if (err) { return done(err); }
+//  *       if (!user) { return done(null, false); }
+//  *       return done(null, user, token);
+//  *     });
+//  *   }
 
 // Configure the Azure AD strategy for use by Passport.
 passport.use(new OIDCStrategy(config.creds, callback));

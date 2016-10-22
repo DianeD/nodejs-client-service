@@ -9,39 +9,32 @@ const express = require('express'),
   router = express.Router(),
   passport = require('passport');
 
-// router.use((req, res, next) => {
-//   console.log(req.method + ' ' + req.url); //todo: add something useful or remove
-//   next();
-// });
-
-router.get('/', 
-  (req, res) => {
-    res.render('index', {
-      current: req.user || null
-    });
-  });
-
-// Route for local account login.
-router.get('/login',
-  (req, res) => {
-    res.render('login');
-  });
-router.post('/login', 
-  passport.authenticate('local', { failureRedirect: '/login' }), //todo: add login error message
-  (req, res) => {
-    res.redirect('/');
-  });
+// Route for local account login
+router.post('/login', (req, res) => {
+  let username = req.body.username;
+  let password = req.body.password;
+   if (username && password)
+    passport.authenticate('local', function(err, user) {
+      if (!user) { res.status(404).send('User not found.'); }
+        res.end('Authenticated!');
+        res.append('U-Token', user.userToken);    
+        res.status(200).end();
+      })(req, res);
+  else res.status(401).send('The username or password is missing.');
+});
 
 // Routes for Azure AD authentication.
 router.get('/connect',
-	passport.authenticate('azuread-openidconnect', { failureRedirect: '/yabba' }),
+	passport.authenticate('azuread-openidconnect', { failureRedirect: '/connect' }),
 	(req, res) => {
 		res.redirect('/');
 });
 router.get('/token', 
-	passport.authenticate('azuread-openidconnect', { failureRedirect: '/dabba' }), //how add error message
+	passport.authenticate('azuread-openidconnect', { failureRedirect: '/connect' }), //how add error message
 	(req, res) => { 
-		res.redirect('/graph');
+    res.append('U-Token', req.user.userToken);    
+    res.status(200).end();
+		//res.redirect('/graph');
 });
 
 router.get('/schedule', //loads a dummy page
