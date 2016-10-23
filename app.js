@@ -17,10 +17,8 @@
 const express = require('express');
 const router = express.Router();
 const session = require('express-session');
-const path = require('path');
-//const favicon = require('serve-favicon');
 const logger = require('morgan');
-//var cookieParser = require('cookie-parser');
+const cookieParser = require('cookie-parser');
 const https = require('https');
 const bodyParser = require('body-parser');
 const passport = require('passport');
@@ -30,21 +28,20 @@ const Database = require('./utils/database');
 const config = require('./utils/config');
 const uuid = require('uuid');
 
-// Configure the local strategy for use by Passport.
+// Configure the local strategy for local db access by Passport.
 passport.use(new LocalStrategy(
   (username, password, done) => {
     const user = Database.users.findOne({ 'username' : username });
-    if (!user || user.password !== password) { return done(null, false); }
+    if (!user || user.password !== password)
+      return done(null, false);
 
-    // User found. Save userToken and return the user.
+    // User found, so add a userToken.
     user.userToken = uuid.v4();
     Database.users.update(user);
     return done(null, user);
   }));
 
-//let callback = (req, iss, sub, profile, accessToken, refreshToken, expires_in, done) => {  
-//let callback = (iss, sub, profile, accessToken, refreshToken, done) => {
-let callback = (token, done) => {
+let callback = (req, iss, sub, profile, accessToken, refreshToken, expires_in, done) => { //how clean this up? just need req, ms email, and token info
   let user = req.user;
   if (!!profile && !!accessToken && !!refreshToken && !!expires_in) {
     user.microsoftAccountName = profile._json.preferred_username;
@@ -76,11 +73,10 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(function(id, done) {
   let user = Database.users.findOne({ 'id' : id });
-  //if (err) { return done(err); }
   done(null, user);
 });
 
-const home = require('./routes/index');
+const index = require('./routes/index');
 const graph = require('./routes/graph-api');
 
 const app = express();
@@ -89,32 +85,25 @@ const env = process.env.NODE_ENV || 'development';
 app.locals.ENV = env;
 app.locals.ENV_DEVELOPMENT = env == 'development';
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
-
-// app.use(favicon(__dirname + '/public/img/favicon.ico'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
   
 }));
-//app.use(cookieParser());
+app.use(cookieParser());
 app.use(session({
-  secret: '12349',
-  name: 'graphNodeServiceCookie',
+  secret: '12349',///what should these be?
+  name: config.cookieName,
   resave: false,
   saveUninitialized: false,
-  //cookie: {secure: true} //while working with http in development
+  //cookie: {secure: true} //while working with http in development todo: test https
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', home);
+app.use('/', index);
 app.use('/graph', graph);
-app.use('/graph', router);
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -123,31 +112,20 @@ app.use(function(req, res, next) {
     next(err);
 });
 
-/// error handlers
-
+// error handlers
 // development error handler
-// will print stacktrace
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err,
-            title: 'error'
-        });
+      res.status(err.status || 500);
+      res.send(err.stack || '');
     });
 }
 
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {},
-        title: 'error'
-    });
+  res.status(err.status || 500);
+  res.send(err.message);
 });
-
 
 module.exports = app;

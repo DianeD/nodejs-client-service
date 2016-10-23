@@ -9,18 +9,17 @@ const express = require('express'),
   router = express.Router(),
   graph = require('msgraph-sdk-javascript'),
   qs = require('querystring'),
-  AuthHelper = require('../utils/auth');
+  authHelper = require('../utils/authHelper');
 
 router.use((req, res, next) => {
   if (req.headers.u-token === req.user.userToken) 
     return next();
-  res.status(401).send('Invalid user token.');
+  res.status(401).send('Invalid user token.'); //how send to app error handler?
 });
 
 // Returns the title, createdTime, and body content of the three latest notes.
-// 1. Gets the OneNote section named "<user.displayName>'s journal"
-// 2. Gets the three most recently created pages
-// 3. Gets the page content of the three pages
+// Gets the journal (a OneNote section anmed "<user.displayName>'s journal"). Creates it if it doesn't exist.
+// Gets the last three notes (the three most recently created pages).
 router.get('/getJournal', (req, res) => {
 
   // Check whether the user is authenticated and has a mapped Microsoft login.
@@ -74,19 +73,20 @@ router.get('/getJournal', (req, res) => {
       // Otherwise create the journal section and the initial page.
       // Then redirect back to this route.
       // This should only be required only on first visit to this page.
-      else {
+      else
         //let sectionName = qs.escape(user.displayName + ' \'s journal');
         client.api('/me/notes/pages?sectionName=' + user.displayName + '\' journal').post((err, response) => { //errs here
           if (err) {
             res.render('error', { message: err.message, error: err });
             return;
           }
+          // res.header('U-Token', user.userToken);
           else res.redirect('/graph');
         });
-      }
     });
   }
-  else res.redirect('/connect'); //still unable to get passport.authenticate() to trigger redirect when called from here
+  else
+    res.redirect('/connect');
 });
 
 module.exports = router;

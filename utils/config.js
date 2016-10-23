@@ -4,6 +4,7 @@
  */
 
 module.exports = {
+    cookieName: 'graph-service-sample',
     creds: {        
         identityMetadata: 'https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration',
         clientID: '4a42edf5-c38c-4c8b-b346-4db631a1aebb',

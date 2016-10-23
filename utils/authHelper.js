@@ -5,9 +5,14 @@
 
 'use strict';
 
-let AuthHelper = () => {};
+let authHelper = () => {
+  refreshToken = (user) => { //make sure passport-azure-ad doesn't already handle this
+    let token = user.refreshToken;
+      //passport.authenticate();//make sure this updates access token, refresh token, and expiration
+  }
+};
   
-AuthHelper.prototype = {
+authHelper.prototype = {
   ensureAuthenticated: (req) => {
 
     // Check token expiry. If the token is valid for another 5 minutes, we'll use it.
@@ -18,14 +23,7 @@ AuthHelper.prototype = {
       if (expiration > new Date()) { return true; }
       else refreshToken(user) 
     return false;
-  },
-  refreshToken: (user) => { //make sure passport-azure-ad doesn't already handle this
-    passport.authentica
-  },
-  logout: function () { 
-    // don't think we need this for this scenario
-    // but include it anyway for completeness
   }
 }
 
-module.exports = AuthHelper;
+module.exports = authHelper;
