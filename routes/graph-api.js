@@ -17,18 +17,18 @@ router.use((req, res, next) => {
   // Check that the request has a valid user session and sent a user teken.
   const userToken = req.headers['u-token'];
   const user = (userToken) ? database.users.findOne({ 'userToken' : userToken }) : null;
-  // if (!req.isAuthenticated() || !user) {
-  //   res.status(401).send('Invalid session or user token.');
-  //   return;
-  // }
+  if (!user) {
+    res.status(401).send('Invalid user token.');
+    return;
+  }
 
-  // // Check that the local user account has a mapped Microsoft account.
-  // if (user.microsoftAccountName)
-  //   next();
+  // Check that the local user account has a mapped Microsoft account.
+  if (user.microsoftAccountName)
+    next();
 
-  // // If not, send the login information to the client.
-  // else
-    res.status(200).send(authHelper.prototype.getAuthUrl());
+  // If not, send the login information to the client.
+  else
+    res.status(302).send(authHelper.prototype.getAuthUrl());
 });
 
 
@@ -39,7 +39,7 @@ router.get('/getJournal', (req, res) => {
 
   // Check whether the user is authenticated and has a mapped Microsoft login.
   let user = req.user;
-  if (req.isAuthenticated() && user.microsoftAccountName) {
+  if (req.isAuthenticated()) {
     let client = graph.init({
       defaultVersion: 'beta',
       debugLogging: true,
