@@ -24,32 +24,32 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
-const Database = require('./utils/database');
+const database = require('./utils/database');
 const config = require('./utils/config');
 const uuid = require('uuid');
 
 // Configure the local strategy for local db access by Passport.
 passport.use(new LocalStrategy(
   (username, password, done) => {
-    const user = Database.users.findOne({ 'username' : username });
+    const user = database.users.findOne({ 'username' : username });
     if (!user || user.password !== password)
       return done(null, false);
 
     // User found, so add a userToken.
     user.userToken = uuid.v4();
-    Database.users.update(user);
+    database.users.update(user);
     return done(null, user);
   }));
 
 let callback = (req, iss, sub, profile, accessToken, refreshToken, expires_in, done) => { //how clean this up? just need req, ms email, and token info
   let user = req.user;
-  if (!!profile && !!accessToken && !!refreshToken && !!expires_in) {
+  if (!!profile && !!accessToken && !!refreshToken && !!expires_in) { //remove or modify this check?
     user.microsoftAccountName = profile._json.preferred_username;
     user.accessToken = accessToken;
     user.refreshToken = refreshToken;
     user.tokenExpires = Math.floor((Date.now() / 1000) + expires_in.expires_in);
   }
-  Database.users.update(user);
+  database.users.update(user);
 	done(null, {
     user
 	})
@@ -72,7 +72,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(function(id, done) {
-  let user = Database.users.findOne({ 'id' : id });
+  let user = database.users.findOne({ 'id' : id });
   done(null, user);
 });
 

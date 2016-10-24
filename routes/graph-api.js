@@ -7,18 +7,33 @@
 
 const express = require('express'),
   router = express.Router(),
+  database = require('../utils/database'),
   graph = require('msgraph-sdk-javascript'),
   qs = require('querystring'),
   authHelper = require('../utils/authHelper');
 
 router.use((req, res, next) => {
-  if (req.headers.u-token === req.user.userToken) 
-    return next();
-  res.status(401).send('Invalid user token.'); //how send to app error handler?
+
+  // Check that the request has a valid user session and sent a user teken.
+  const userToken = req.headers['u-token'];
+  const user = (userToken) ? database.users.findOne({ 'userToken' : userToken }) : null;
+  // if (!req.isAuthenticated() || !user) {
+  //   res.status(401).send('Invalid session or user token.');
+  //   return;
+  // }
+
+  // // Check that the local user account has a mapped Microsoft account.
+  // if (user.microsoftAccountName)
+  //   next();
+
+  // // If not, send the login information to the client.
+  // else
+    res.status(200).send(authHelper.prototype.getAuthUrl());
 });
 
+
 // Returns the title, createdTime, and body content of the three latest notes.
-// Gets the journal (a OneNote section anmed "<user.displayName>'s journal"). Creates it if it doesn't exist.
+// Gets the journal (a OneNote section named "<user.displayName>'s journal"). Creates it if it doesn't exist.
 // Gets the last three notes (the three most recently created pages).
 router.get('/getJournal', (req, res) => {
 
@@ -46,7 +61,7 @@ router.get('/getJournal', (req, res) => {
         let sections = response.value;
 
         // If the journal section exists, get the last three pages. 
-        // Expanding on pages is not supported for Office 365 notebooks, so this call is separate.
+        // Expanding on pages is not supported for Office 365 notebooks, so this call is made separately.
         if (sections.length > 0) {
           const section = sections[0];
           const sectionId = section.id;
