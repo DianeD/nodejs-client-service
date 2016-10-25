@@ -31,16 +31,30 @@ router.post('/login', (req, res) => {
 
 // Routes for Azure AD authentication.
 router.get('/authorize',
-	passport.authenticate('azuread-openidconnect', { failureRedirect: '/' }),
+	passport.authenticate('azuread-openidconnect', { customState: 'hello', failureRedirect: '/' }),
 	(req, res) => {
 		res.redirect('/');
   });
 router.get('/token',
 	passport.authenticate('azuread-openidconnect', { failureRedirect: '/authorize' }),
 	(req, res) => {
-    res.header('U-Token', req.user.userToken);
-    res.sendStatus(200);
+    console.log('Mapped Azure AD account info for ' + req.user.id);
+		res.end();
   });
+// router.get('/token',
+//   (req, res) => {
+//     if (req.query.code) 
+//       passport.authenticate('azuread-openidconnect', { failureRedirect: '/' }),
+//       (req, res) => {
+//         res.redirect('/');
+//       }
+//     else
+//       passport.authenticate('azuread-openidconnect', { failureRedirect: '/token' }),
+//       (req, res) => {
+//         res.header('U-Token', req.user.userToken);
+//         res.sendStatus(200); //how send this to particular client?
+//       }
+//   });
 
 router.get('/logout', (req, res) => {
   let userToken = req.user.userToken;

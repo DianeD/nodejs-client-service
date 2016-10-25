@@ -23,7 +23,7 @@ function loadDbHandler() {
 
   if (users === null) {
     users = db.addCollection('users');
-    users.insert({ "id": "a733a26a-8d2d-4d84-b974-9e3d5bae74e8", "username": "adarrow", "displayName": "Alex Darrow", "password": "pass@word1"});//, "userToken": "todo guid" }); //insert a test user
+    users.insert({ "id": "a733a26a-8d2d-4d84-b974-9e3d5bae74e8", "username": "adarrow", "displayName": "Alex Darrow", "password": "pass@word1"}); //insert a test user
   }
 
   database.users = users;
