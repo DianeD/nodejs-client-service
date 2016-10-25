@@ -42,9 +42,10 @@ passport.use(new LocalStrategy(
   }));
 
 let callback = (req, iss, sub, profile, accessToken, refreshToken, done) => {
-  //does double hop
-  const user = database.users.findOne({ 'displayName': profile.displayName }); // need some way to get username or userToken
-  if (user) { //remove or modify this check?
+  // does double hop
+  // need some way to get username or userToken
+  const user = database.users.findOne({ 'displayName': profile.displayName });
+  if (user) {
     user.microsoftAccountName = profile._json.preferred_username;
     user.accessToken = accessToken;
     user.refreshToken = refreshToken;
@@ -53,14 +54,6 @@ let callback = (req, iss, sub, profile, accessToken, refreshToken, done) => {
   database.users.update(user);
 	done(null, { user })
 };
-
-//  *   function(token, done) {
-//  *     User.findById(token.sub, function (err, user) {
-//  *       if (err) { return done(err); }
-//  *       if (!user) { return done(null, false); }
-//  *       return done(null, user, token);
-//  *     });
-//  *   }
 
 // Configure the Azure AD strategy for use by Passport.
 passport.use(new OIDCStrategy(config.creds, callback));

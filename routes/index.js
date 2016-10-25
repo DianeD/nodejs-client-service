@@ -31,14 +31,14 @@ router.post('/login', (req, res) => {
 
 // Routes for Azure AD authentication.
 router.get('/authorize',
-	passport.authenticate('azuread-openidconnect', { customState: 'hello', failureRedirect: '/' }),
-	(req, res) => {
-		res.redirect('/');
-  });
+  passport.authenticate('azuread-openidconnect', { failureRedirect: '/' }),
+  (req, res) => {
+    res.redirect('/');
+});
 router.get('/token',
 	passport.authenticate('azuread-openidconnect', { failureRedirect: '/authorize' }),
 	(req, res) => {
-    console.log('Mapped Azure AD account info for ' + req.user.id);
+    console.log('Mapped Azure AD account info for ' + req.user.user.id);
 		res.end();
   });
 // router.get('/token',

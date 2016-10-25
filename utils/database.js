@@ -4,6 +4,7 @@
  */
 
 /*
+ * Code by smalltalk-josh
  * https://github.com/techfort/LokiJS/issues/480
  */
 
@@ -11,7 +12,7 @@
 
 let
   loki = require('lokijs'),
-  db  = new loki('../models/users.json', { //not sure how this file is being used
+  db  = new loki('users', {
     autoload: true,
     autoloadCallback: loadDbHandler
   }),
