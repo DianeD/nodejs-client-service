@@ -15,8 +15,8 @@ let authHelper = () => {
 };
   
 authHelper.prototype = {
-  getAuthUrl: () => {
-    return 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize?'
+  getAuthUrl: (userToken) => {
+    return 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
       + '?client_id=' + config.creds.clientID
       + '&response_type=' + config.creds.responseType
       + '&redirect_uri=' + config.creds.redirectUrl

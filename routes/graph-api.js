@@ -16,7 +16,7 @@ router.use((req, res, next) => {
 
   // Check that the request has a valid user session and sent a user teken.
   const userToken = req.headers['u-token'];
-  const user = (userToken) ? database.users.findOne({ 'userToken' : userToken }) : null;
+  const user = (req.user) ? req.user : database.users.findOne({ 'userToken' : userToken });
   if (!user) {
     res.status(401).send('Invalid user token.');
     return;
@@ -28,7 +28,8 @@ router.use((req, res, next) => {
 
   // If not, send the login information to the client.
   else
-    res.status(302).send(authHelper.prototype.getAuthUrl());
+    res.header('U-Token', user.userToken);
+    res.status(302).send(authHelper.prototype.getAuthUrl(userToken));
 });
 
 

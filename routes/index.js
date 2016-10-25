@@ -15,7 +15,9 @@ router.post('/login', (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
   if (username && password)
-    passport.authenticate('local', function(err, user) {
+    passport.authenticate('local', (err, user) => {
+      if (err)
+        res.status().send();
       if (!user)
         res.status(404).send('User not found.');
       else {
@@ -28,15 +30,15 @@ router.post('/login', (req, res) => {
 });
 
 // Routes for Azure AD authentication.
-router.get('/connect', //check userToken
-	passport.authenticate('azuread-openidconnect', { failureRedirect: '/connect' }),
+router.get('/authorize',
+	passport.authenticate('azuread-openidconnect', { failureRedirect: '/' }),
 	(req, res) => {
 		res.redirect('/');
   });
-router.get('/token', 
-	passport.authenticate('azuread-openidconnect', { failureRedirect: '/connect' }),
+router.get('/token',
+	passport.authenticate('azuread-openidconnect', { failureRedirect: '/authorize' }),
 	(req, res) => {
-    res.header('U-Token', req.user.userToken);    
+    res.header('U-Token', req.user.userToken);
     res.sendStatus(200);
   });
 

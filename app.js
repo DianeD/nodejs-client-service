@@ -41,25 +41,18 @@ passport.use(new LocalStrategy(
     return done(null, user);
   }));
 
-let callback = (req, iss, sub, profile, accessToken, refreshToken, expires_in, done) => { //how clean this up? just need req, ms email, and token info
-  if (req.user) {
-    if (!!profile && !!accessToken && !!refreshToken && !!expires_in) { //remove or modify this check?
-      user.microsoftAccountName = profile._json.preferred_username;
-      user.accessToken = accessToken;
-      user.refreshToken = refreshToken;
-      user.tokenExpires = Math.floor((Date.now() / 1000) + expires_in.expires_in);
-    }
-    database.users.update(user);
-    done(null, {
-      user
-    })
+let callback = (req, iss, sub, profile, accessToken, refreshToken, expires_in, done) => { 
+  //how clean this up? just need req, ms email, and token info. Other args don't include all this
+  //does double hop
+  const user = database.users.findOne({ 'displayName': profile.displayName }); // need some way to get username or userToken
+  if (!!profile && !!accessToken && !!refreshToken && !!expires_in) { //remove or modify this check?
+    user.microsoftAccountName = profile._json.preferred_username;
+    user.accessToken = accessToken;
+    user.refreshToken = refreshToken;
+    user.tokenExpires = Math.floor((Date.now() / 1000) + expires_in.expires_in);
   }
-  else {// after initial AAD login
-    // will need to validate if not using passport-azure-ad
-    const userToken = expires_in.state;
-    const user = database.users.findOne({ 'userToken' : userToken });
-    database.users.update(user);
-  }
+  database.users.update(user);
+	done(null, { user })
 };
 
 //  *   function(token, done) {
@@ -96,7 +89,6 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
-  
 }));
 app.use(cookieParser());
 app.use(session({

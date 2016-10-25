@@ -26,9 +26,9 @@ function loadDbHandler() {
     users.insert({ "id": "a733a26a-8d2d-4d84-b974-9e3d5bae74e8", "username": "adarrow", "displayName": "Alex Darrow", "password": "pass@word1"});//, "userToken": "todo guid" }); //insert a test user
   }
 
-  Database.users = users;
+  database.users = users;
 }
 
-let Database = function () {};
+let database = function () {};
 
-module.exports = Database;
+module.exports = database;
