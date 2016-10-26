@@ -42,9 +42,7 @@ passport.use(new LocalStrategy(
   }));
 
 let callback = (req, iss, sub, profile, accessToken, refreshToken, done) => {
-  // does double hop
-  // need some way to get username or userToken
-  const user = database.users.findOne({ 'displayName': profile.displayName });
+  const user = database.users.findOne({ 'userToken': req.query.state });
   if (user) {
     user.microsoftAccountName = profile._json.preferred_username;
     user.accessToken = accessToken;

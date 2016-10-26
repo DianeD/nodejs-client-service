@@ -29,32 +29,20 @@ router.post('/login', (req, res) => {
     res.status(401).send('The username or password is missing.');
 });
 
-// Routes for Azure AD authentication.
-router.get('/authorize',
-  passport.authenticate('azuread-openidconnect', { failureRedirect: '/' }),
+// Azure AD authorization
+router.get('/connect',
   (req, res) => {
-    res.redirect('/');
-});
-router.get('/token',
-	passport.authenticate('azuread-openidconnect', { failureRedirect: '/authorize' }),
-	(req, res) => {
-    console.log('Mapped Azure AD account info for ' + req.user.user.id);
-		res.end();
+    const state = req.headers['u-token'];
+    passport.authenticate('azuread-openidconnect', { customState: state, failureRedirect: '/connect' })(req, res),
+    (req, res) => {
+      res.end();
+    }
   });
-// router.get('/token',
-//   (req, res) => {
-//     if (req.query.code) 
-//       passport.authenticate('azuread-openidconnect', { failureRedirect: '/' }),
-//       (req, res) => {
-//         res.redirect('/');
-//       }
-//     else
-//       passport.authenticate('azuread-openidconnect', { failureRedirect: '/token' }),
-//       (req, res) => {
-//         res.header('U-Token', req.user.userToken);
-//         res.sendStatus(200); //how send this to particular client?
-//       }
-//   });
+router.get('/token', 
+	passport.authenticate('azuread-openidconnect', { failureRedirect: '/connect' }),
+	(req, res) => { 
+      res.end(); // notify client?
+});
 
 router.get('/logout', (req, res) => {
   let userToken = req.user.userToken;

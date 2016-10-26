@@ -6,6 +6,7 @@
 'use strict';
 
 const config = require('./config');
+//const passport = require('passport-azure-ad');
 
 let authHelper = () => {
   refreshToken = (user) => { //make sure passport-azure-ad doesn't already handle this
@@ -20,7 +21,8 @@ authHelper.prototype = {
       + '?client_id=' + config.creds.clientID
       + '&response_type=' + config.creds.responseType
       + '&redirect_uri=' + config.creds.redirectUrl
-      + '&scope=' + config.creds.scope.replace(/ /g, "%20");
+      + '&scope=' + config.creds.scope.replace(/ /g, "%20"),
+      + '&state=supercalifragilisticexpialidocious';
   },
   ensureAuthenticated: (req) => {
 

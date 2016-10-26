@@ -28,6 +28,7 @@ router.use((req, res, next) => {
 
   // If not, send the login information to the client.
   else
+  req.session[userToken]
     res.header('U-Token', user.userToken);
     res.status(302).send(authHelper.prototype.getAuthUrl(userToken));
 });
