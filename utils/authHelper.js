@@ -6,7 +6,7 @@
 'use strict';
 
 const config = require('./config');
-//const passport = require('passport-azure-ad');
+//const passport = require('passport');
 
 let authHelper = () => {
   refreshToken = (user) => { //make sure passport-azure-ad doesn't already handle this
@@ -16,14 +16,6 @@ let authHelper = () => {
 };
   
 authHelper.prototype = {
-  getAuthUrl: (userToken) => {
-    return 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
-      + '?client_id=' + config.creds.clientID
-      + '&response_type=' + config.creds.responseType
-      + '&redirect_uri=' + config.creds.redirectUrl
-      + '&scope=' + config.creds.scope.replace(/ /g, "%20"),
-      + '&state=supercalifragilisticexpialidocious';
-  },
   ensureAuthenticated: (req) => {
 
     // Check token expiry. If the token is valid for another 5 minutes, we'll use it.
@@ -32,8 +24,11 @@ authHelper.prototype = {
     expiration.setTime((user.tokenExpires - 300) * 1000); 
     if (req.isAuthenticated())
       if (expiration > new Date()) { return true; }
-      else refreshToken(user) 
+      else this.refreshToken(user) 
     return false;
+  },
+  refreshAccessToken: (req) => {
+    var stop = '';
   }
 }
 

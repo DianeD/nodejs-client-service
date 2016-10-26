@@ -17,7 +17,7 @@ router.post('/login', (req, res) => {
   if (username && password)
     passport.authenticate('local', (err, user) => {
       if (err)
-        res.status().send();
+        res.status(500).send(err.message);
       if (!user)
         res.status(404).send('User not found.');
       else {
@@ -40,8 +40,9 @@ router.get('/connect',
   });
 router.get('/token', 
 	passport.authenticate('azuread-openidconnect', { failureRedirect: '/connect' }),
-	(req, res) => { 
-      res.end(); // notify client?
+	(req, res) => {
+    console.log('Mapped user ' + req.user.user.id);
+    res.end(); // notify client?
 });
 
 router.get('/logout', (req, res) => {

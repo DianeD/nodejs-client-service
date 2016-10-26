@@ -29,7 +29,7 @@ router.use((req, res, next) => {
   // If no mapped account, send the login information to the client.
   else
     res.header('U-Token', user.userToken);
-    res.status(401).send('Sign in required at /connect.');
+    res.status(302).send('Sign in required at /connect.');
 });
 
 
@@ -59,8 +59,7 @@ router.get('/getJournal', (req, res) => {
 //       .select('name,id')
 //       .get((err, response) => {
 //         if (err) {
-//           res.render('error', { message: err.message, error: err });
-//           return;
+//           res.status(err.status).send(err.message); //does this also end thread?
 //         }
 //         let sections = response.value;
 
@@ -79,8 +78,9 @@ router.get('/getJournal', (req, res) => {
 //             .top(3)
 //             .get((err, response) => {
 //               if (err) {
-//                 res.render('error', { message: err.message, error: err });
-//                 return;
+//                 res.status(err.status).send(err.message);
+//                 // res.render('error', { message: err.message, error: err });
+//                 // return;
 //               }
 //               //loop pages = response.value;
 //               const html = '<div><p><b>hello </b></p></div><div><p><i>test page html</i></p></div>';
