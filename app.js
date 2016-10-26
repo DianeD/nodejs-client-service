@@ -41,8 +41,8 @@ passport.use(new LocalStrategy(
     return done(null, user);
   }));
 
-let callback = (req, jwtClaims, accessToken, refreshToken, done) => {
-//let callback = (req, iss, sub, profile, accessToken, refreshToken, done) => {
+//let callback = (req, iss, sub, profile, params, done) => {
+let callback = (req, iss, sub, profile, accessToken, refreshToken, done) => {
   const user = database.users.findOne({ 'userToken': req.query.state });
   if (user) {
     user.microsoftAccountName = profile._json.preferred_username;
