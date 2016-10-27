@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "772981678079",
+    "firebase_url": "https://hybriddemo-141118.firebaseio.com",
+    "project_id": "hybriddemo-141118",
+    "storage_bucket": "hybriddemo-141118.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:772981678079:android:3e98594fa85ac4b2",
+        "android_client_info": {
+          "package_name": "com.microsoft.graph.hybrid"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "772981678079-vjrhtki5cvic0oamgjmv0msjfojekosd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.microsoft.graph.hybrid",
+            "certificate_hash": "E46FDB37CCE39738C2227D2DC18C67FDABA0D587"
+          }
+        },
+        {
+          "client_id": "772981678079-esa1s9rreqsf0smsbbrdfkeslui261jj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgrOlNC5AROb1z55OZoin2lF7im8cl2nY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "772981678079-esa1s9rreqsf0smsbbrdfkeslui261jj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
