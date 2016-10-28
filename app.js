@@ -49,9 +49,9 @@ let callback = (req, iss, sub, profile, accessToken, refreshToken, done) => {
     user.accessToken = accessToken;
     user.refreshToken = refreshToken;
     user.tokenExpires = profile._json.exp;
+    database.users.update(user);
+    done(null, { user })
   }
-  database.users.update(user);
-	done(null, { user })
 };
 
 // Configure the Azure AD strategy for use by Passport.

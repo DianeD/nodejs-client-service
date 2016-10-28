@@ -22,7 +22,7 @@ router.post('/login', (req, res) => {
         res.status(404).send('User not found.');
       else {
         res.header('U-Token', user.userToken);
-        res.sendStatus(200);
+        rres.sendStatus(200);
       }
     })(req, res);
   else
@@ -35,14 +35,14 @@ router.get('/connect',
     const state = req.headers['u-token'];
     passport.authenticate('azuread-openidconnect', { customState: state, failureRedirect: '/connect' })(req, res),
     (req, res) => {
-      res.end();
+      return res.end(); 
     }
   });
 router.get('/token', 
 	passport.authenticate('azuread-openidconnect', { failureRedirect: '/connect' }),
 	(req, res) => {
     console.log('Mapped user ' + req.user.user.id);
-    res.end(); // notify client?
+    res.sendStatus(200);
 });
 
 router.get('/logout', (req, res) => {

@@ -10,27 +10,63 @@ const express = require('express'),
   database = require('../utils/database'),
   graph = require('msgraph-sdk-javascript'),
   //qs = require('querystring'),
+  async = require('async'),
   authHelper = require('../utils/authHelper');
+
+const createPageInSection = (res, client, sectionName) => {
+  const date = new Date();
+  const pageHtml = '<!DOCTYPE html>' +
+    '<html>' +
+      '<head>' +
+        '<title>' + date.toLocaleString().split(',')[0] + '</title>' + //todo: handle client utc
+        '<meta name="created" content="' + date.toISOString() + '" />' + //todo: handle client utc
+      '</head>' +
+      '<body></body>' +
+    '</html>';
+  client.api('/me/notes/pages?sectionName=' + 'test1')//sectionName)
+    .header('content-type', 'text/html')
+    .post(pageHtml, (err, newPage) => {
+      if (err) {
+        res.status(err.statusCode).send(err);
+      }
+
+      // Get the parent section (not returned in a create-page request).            
+      client.api(newPage.self)
+        .select('id,self,title,createdTime,contentUrl')
+        .expand('parentSection(select=id,name)')
+        .get((err, page, rawResponse) => {
+          if (err) {
+            return res.status(err.statusCode).send(err); 
+          }
+          page.content = '';
+          res.status(200).send({ "section": page.parentSection, "pages": [page] });
+        });
+    });
+}
 
 router.use((req, res, next) => {
 
-  // Check that the request has a valid user session and sent a user teken.
+  // Check that the request contains a valid user token.
   const userToken = req.headers['u-token'];
-  const user = (req.user) ? req.user : database.users.findOne({ 'userToken' : userToken });
+  const user = (req.user) ? req.user.user : database.users.findOne({ 'userToken' : userToken }); //todo: also validate that the req.user token is the same as the sent user token
   if (!user) {
     res.status(401).send('Invalid user token.');
     return;
   }
 
+  //todo: add check req.isAuthenticated() somewhere
+
   // Check that the local user account has a mapped Microsoft account.
   if (user.microsoftAccountName)
     next();
 
-  // If no mapped account, send the login information to the client.
+  // If no mapped account, send the sign-in url to the client.
   else
-    res.header('U-Token', user.userToken);
-    res.header('Location', 'http://localhost:3000/connect');
-    res.status(302).send('Sign in required.');
+    res.set({
+      'U-Token': user.userToken,
+      'Location': 'http://localhost:3000/connect'
+    });
+    res.status(401).send('Sign in required.');
 });
 
 
@@ -38,74 +74,66 @@ router.use((req, res, next) => {
 // Gets the journal (a OneNote section named "<user.displayName>'s journal"). Creates it if it doesn't exist.
 // Gets the last three notes (the three most recently created pages).
 router.get('/getJournal', (req, res) => {
+  const user = (req.user) ? req.user.user : database.users.findOne({ 'username' : 'adarrow' }); //should just need to get this from req
+  const sectionName = user.displayName + 's journal'; //todo: encode with apostrophe
+  //const accessToken = authHelper.prototype.ensureAuthenticated(req);
 
-  // Check whether the user is authenticated and has a mapped Microsoft login.  
-  const user = (req.user) ? req.user.user : database.users.findOne({ 'userToken' : userToken }); //db user for testing todo: remove
-  const accessToken = authHelper.prototype.ensureAuthenticated(); // need to await this for refresh token
-  if (req.isAuthenticated()) {
-    let client = graph.init({
-      defaultVersion: 'beta',
-      debugLogging: true,
-      authProvider: function (done) {
-        done(null, accessToken);
+  // Initialize the Microsoft Graph SDK client.
+  const client = graph.init({
+    defaultVersion: 'beta',
+    debugLogging: true,
+    authProvider: function (done) {
+      done(null, authHelper.prototype.ensureAuthenticated(req));
+      //done(null, accessToken); 
+    }
+  });
+  
+  // Get the last three pages in the journal section.
+  client.api('/me/notes/pages')
+    .filter('parentSection/name eq \'' + sectionName + '\'')//'Alex Darrow\'s journal'
+    //.filter('parentSection/name eq \'' + user.displayName + '\'s journal\'')
+    // .filter('parentSection/name eq \'' + user.displayName + '\'\'s journal\'')
+    // .filter('parentSection/name eq \'' + user.displayName + '\\\'s journal\'')
+    .select('id,self,title,createdTime,contentUrl')
+    .expand('parentSection(select=id,name)')
+    .orderby('createdTime desc')
+    .top(5)
+    .get((err, data) => {
+      if (err) {
+        return res.status(err.statusCode).send(err); //returned err sans status code "Unknown token  " with apostrophe
       }
-    });
-    
-    // Get the journal section.
-    //https://graph.microsoft.com/beta/me/notes/sections?filter=name%20eq%20'Alex%20Darrow''s%20journal'
-    client.api('/me/notes/sections')
-      .filter('name eq \'' + user.displayName + '\'\'s journal\'')
-      .select('name,id')
-      .get((err, response) => {
-        if (err) {
-          res.status(err.status).send(err.message); //does this also end thread?
-        }
-        let sections = response.value;
 
-        // If the journal section exists, get the last three pages. 
-        // Expanding on pages is not supported for Office 365 notebooks, so this call is made separately.
-        if (sections.length > 0) {
-          const section = sections[0];
-          const sectionId = section.id;
-          const pages = [];
-          //client.api('me/notes/pages?filter=/parentSection/id eq \'' + sectionId + '\'')
-            //.select('title,createdTime,content')
-            //.top(3)
-          client.api('/me/notes/sections/' + sectionId + '/pages')
-            .select('title,createdTime,pageContentUrl')
-            .orderby('lastModifiedTime desc')
-            .top(3)
-            .get((err, response) => {
+      // If the journal section exists, get the last three pages. The journal is 
+      // created with a page, so there should be at least one.
+      const pages = data.value;
+      if (pages.length > 0) {
+        const parentSection = pages[0].parentSection;
+        
+        // Get the HTML content of each page.
+        async.each(pages, (page, callback) => {
+          client.api(page.contentUrl)
+            .header('accept', 'text/html') //not working? getting a _proto object only for page content
+            .get((err, pageContent, rawResponse) => {
               if (err) {
-                res.status(err.status).send(err.message);
-                // res.render('error', { message: err.message, error: err });
-                // return;
+                return res.status(err.statusCode).send(err);
               }
-              //loop pages = response.value;
-              // const html = '<div><p><b>hello </b></p></div><div><p><i>test page html</i></p></div>';
-              // // get and prep page content
-              // res.render('journal', { user: user, section: section.name, pages: pages, test: html });
-                res.status(200).send({ection: section.name, pages: pages});
-          });
+              //page.content = pageContent;
+              page.content = rawResponse.text;
+              callback();
+            });
+          },
+          (err) => {
+            if (!err)
+              return res.status(200).send({ "section": parentSection, "pages": pages });
+          }
+        );
       }  
       
       // Otherwise create the journal section and the initial page.
-      // Then redirect back to this route.
-      // This should only be required only on first visit to this page.
+      // This should only be required the first time the user accesses the journal.
       else
-        //let sectionName = qs.escape(user.displayName + ' \'s journal');
-        client.api('/me/notes/pages?sectionName=' + user.displayName + '\' journal').post((err, response) => { //errs here
-          if (err) {
-            res.render('error', { message: err.message, error: err });
-            return;
-          }
-          // res.header('U-Token', user.userToken);
-          else res.redirect('/graph');
-        });
+        createPageInSection(res, client, sectionName);
     });
-  }
-  else
-    res.redirect('/connect');
 });
 
 module.exports = router;
